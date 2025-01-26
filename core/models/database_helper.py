@@ -23,7 +23,7 @@ class Database_Helper():
         session = scoped_session(self.session_factory)
         return session
     
-    def session_dependence(self) -> Session:
+    def session_dependence(self) -> Session: # type: ignore
         session = self.get_scoped_session()
         try:
             yield session
