@@ -19,5 +19,13 @@ class Customer(Base):
     active_licenses: Mapped[list] = mapped_column(JSON, nullable=True)
     notes: Mapped[str] = mapped_column(nullable=True)
 
-    objects: Mapped[list["Object"]] = relationship(back_populates="customer", cascade="all, delete-orphan")
+    objects: Mapped[list["Object"]] = relationship(back_populates="customer", 
+                                                   foreign_keys="[Object.company_TIN]",
+                                                   cascade="all, delete-orphan")
+    
+    def __repr__(self):
+        return f"Customer(name={self.name}, email={self.email}, phone_number={self.phone_number})"
+
+    def __str__(self):
+        return f"Customer: {self.name}, Email: {self.email}, Phone: {self.phone_number}"
 

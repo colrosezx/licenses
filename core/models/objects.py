@@ -25,6 +25,8 @@ class Object(Base):
         ForeignKey("services.name")
     )
 
-    customer: Mapped["Customer"] = relationship(back_populates="objects", cascade="all, delete-orphan")
-    service: Mapped["Service"] = relationship(back_populates="objects", cascade="all, delete-orphan")
+    customer: Mapped["Customer"] = relationship(back_populates="objects", 
+                                                foreign_keys=[company_TIN],
+                                                )
+    service: Mapped["Service"] = relationship(back_populates="objects", cascade="all, delete-orphan", single_parent=True)
     

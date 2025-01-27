@@ -12,4 +12,4 @@ class License(Base):
     end_date: Mapped[date] = mapped_column(nullable=False)
     status: Mapped[str] = mapped_column(default="Активный", server_default="Активный")
 
-    services: Mapped[list["Service"]] = relationship(back_populates="license", cascade="all, delete-orphan")
+    service: Mapped["Service"] = relationship(back_populates="licenses", cascade="all, delete-orphan")

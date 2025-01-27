@@ -1,7 +1,5 @@
 myvenv/
 alembic/
 alembic.ini
-core/__pycache__/
-core/models/__pycache__/
-__pycache__/
-core/database.db
+*.pyc
+*.db

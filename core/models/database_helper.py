@@ -20,7 +20,7 @@ class Database_Helper():
         )
 
     def get_scoped_session(self):
-        session = scoped_session(self.session_factory)
+        session = scoped_session(self.sessionmaker)
         return session
     
     def session_dependence(self) -> Session: # type: ignore
@@ -33,7 +33,7 @@ class Database_Helper():
 
 
 database_helper = Database_Helper(
-    url = project_settings.db_url,
+    url=project_settings.db_url,
     echo=project_settings.db_echo
 )
 

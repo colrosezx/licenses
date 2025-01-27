@@ -15,5 +15,5 @@ class Service(Base):
         ForeignKey("licenses.license_key")
     )
 
-    objects: Mapped[list["Object"]] = relationship(back_populates="service", cascade="all, delete-orphan")
-    license: Mapped["License"] = relationship(back_populates="services", cascade="all, delete-orphan")
+    objects: Mapped[list["Object"]] = relationship(back_populates="service")
+    licenses: Mapped[list["License"]] = relationship(back_populates="service", cascade="all, delete-orphan", single_parent=True)
