@@ -6,27 +6,33 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .customers import Customer
     from .services import Service
+    from .licenses import License
 
 class Object(Base):
     name: Mapped[str]
-    adress: Mapped[str]
     description: Mapped[str] = mapped_column(nullable=True)
     status: Mapped[str] = mapped_column(default="Неактивный", server_default="Неактивный")
 
-    company_name: Mapped[str] = mapped_column(
-        ForeignKey("customers.name")
-    )
-
-    company_TIN: Mapped[str] = mapped_column(
+    customer_TIN: Mapped[str] = mapped_column(
         ForeignKey("customers.TIN")
     )
 
-    service_name: Mapped[int] = mapped_column(
-        ForeignKey("services.name")
+    service_id: Mapped[int] = mapped_column(
+        ForeignKey("services.id")
     )
 
+    license_key: Mapped[str] = mapped_column(
+        ForeignKey(
+            "licenses.license_key"
+        )
+    )
+
+    license: Mapped["License"] = relationship(back_populates="object",
+                                              cascade="all, delete-orphan",
+                                              single_parent=True)
+
     customer: Mapped["Customer"] = relationship(back_populates="objects", 
-                                                foreign_keys=[company_TIN],
+                                                foreign_keys=[customer_TIN],
                                                 )
     service: Mapped["Service"] = relationship(back_populates="objects", cascade="all, delete-orphan", single_parent=True)
     

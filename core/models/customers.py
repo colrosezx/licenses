@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 class Customer(Base):  
     name: Mapped[str]
-    TIN: Mapped[str]
+    TIN: Mapped[str] = mapped_column(unique=True)
     contact_persons: Mapped[list] = mapped_column(JSON, nullable=True)
     email: Mapped[str]
     phone_number: Mapped[str]
@@ -20,7 +20,7 @@ class Customer(Base):
     notes: Mapped[str] = mapped_column(nullable=True)
 
     objects: Mapped[list["Object"]] = relationship(back_populates="customer", 
-                                                   foreign_keys="[Object.company_TIN]",
+                                                   foreign_keys="[Object.customer_TIN]",
                                                    cascade="all, delete-orphan")
     
     def __repr__(self):

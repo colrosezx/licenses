@@ -62,21 +62,21 @@ def read_customers(session: Session) -> list[Customer]:
 
 
 def main():
-    # with db_helper.sessionmaker() as session:
-    #     Gregory = create_customer(
-    #         session=session,
-    #         name="Gregory",
-    #         TIN="987654321012",
-    #         email="GregVladimidorich@gmail.com",
-    #         phone_number="89745612301",
-    #         contact_persons="Malcev Gregory Vladimirovich"            
-    #     )
-
-    #     print(Gregory)
-
     with db_helper.sessionmaker() as session:
-        delete_customer_by_TIN(session=session,
-                                     TIN="987654321012")
+        Gregory = create_customer(
+            session=session,
+            name="Gregory",
+            TIN="987654321012",
+            email="GregVladimidorich@gmail.com",
+            phone_number="89745612301",
+            contact_persons="Malcev Gregory Vladimirovich"            
+        )
+
+        print(Gregory)
+
+    # with db_helper.sessionmaker() as session:
+    #     delete_customer_by_TIN(session=session,
+    #                                  TIN="987654321012")
 
 
 if __name__ == "__main__":

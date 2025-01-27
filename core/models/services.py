@@ -10,10 +10,6 @@ if TYPE_CHECKING:
 class Service(Base):
     name: Mapped[str]
     description: Mapped[str] = mapped_column(nullable="True")
-    status: Mapped[str] = mapped_column(default="Неактивный", server_default="Неактивный")
-    license_key: Mapped[str] = mapped_column(
-        ForeignKey("licenses.license_key")
-    )
 
     objects: Mapped[list["Object"]] = relationship(back_populates="service")
-    licenses: Mapped[list["License"]] = relationship(back_populates="service", cascade="all, delete-orphan", single_parent=True)
+    licenses: Mapped[list["License"]] = relationship(back_populates="service", cascade="all, delete-orphan")

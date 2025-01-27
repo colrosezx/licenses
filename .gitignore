@@ -3,3 +3,5 @@ alembic/
 alembic.ini
 *.pyc
 *.db
+*.db-shm
+core/database.db-wal
