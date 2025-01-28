@@ -22,3 +22,9 @@ class License(Base):
                                               cascade="all, delete-orphan")
 
     service: Mapped["Service"] = relationship(back_populates="licenses", cascade="all, delete-orphan", single_parent=True)
+
+    def __repr__(self):
+        return f"License(license_key={self.license_key}, start_date={self.start_date}, end_date={self.end_date})"
+
+    def __str__(self):
+        return f"License: {self.license_key}, start_date: {self.start_date}, end_date: {self.end_date}"

@@ -35,4 +35,11 @@ class Object(Base):
                                                 foreign_keys=[customer_TIN],
                                                 )
     service: Mapped["Service"] = relationship(back_populates="objects", cascade="all, delete-orphan", single_parent=True)
+
+
+    def __repr__(self):
+        return f"Object(name={self.name}, description={self.description}, license_key={self.license_key})"
+
+    def __str__(self):
+        return f"Object: {self.name}, description: {self.description}, license_key: {self.license_key}"
     

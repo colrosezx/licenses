@@ -8,17 +8,19 @@ from ..licenses.crud import create_license
 from core.models import database_helper
 from core.models import Object, Customer, Service, License
 
-def create_object(session: Session,
+def create_object_with_license(session: Session,
                   name: str,
                   customer_TIN: str,
                   service_id: int,
-                  description: Optional[str] = None) -> Object:
+                  license_duration_months: int,
+                  description: Optional[str] = None,
+                  ) -> Object:
     
     license_for_object_creation = create_license(
             session=session,
             license_key=random_key,
             start_date=date.today(),
-            end_date=(date.today() + relativedelta(months=1)),
+            end_date=(date.today() + relativedelta(months=license_duration_months)),
             service_id=service_id
         )
 
@@ -49,10 +51,10 @@ def create_object(session: Session,
     return object
 
 
+def update_objects_license_status_by_id(session: Session,
+                                                 ID: int):
 
-def update_objects_license_status(session: Session):
-
-    objects_query = select(Object) 
+    objects_query = select(Object).where(Object.id == ID) 
     objects = session.execute(objects_query).scalars().all()
 
     for object in objects:
@@ -78,7 +80,13 @@ def update_objects_license_status(session: Session):
 
 def main():
     with database_helper.sessionmaker() as session:
-        update_objects_license_status(session=session)
+        create_object_with_license(session=session,
+        name="Big object", 
+        customer_TIN="987654321012", 
+        service_id=1, 
+        license_duration_months=1, 
+        description="Nice object"
+        )
 
 if __name__ == "__main__":
     main()

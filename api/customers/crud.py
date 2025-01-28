@@ -1,12 +1,12 @@
+from datetime import date
 import json
 from pydantic import EmailStr, Field
-from sqlalchemy import Result, Select
+from sqlalchemy import Result, Select, Update
 from core.models import database_helper as db_helper
-from core.models import Customer
-from sqlalchemy.orm import Session
+from core.models import Customer, Object, License
+from sqlalchemy.orm import Session, selectinload, joinedload
 from typing import Annotated, Dict, List, Optional
-
-
+from ..objects.crud import update_objects_license_status_by_id
 
 def create_customer(session: Session,
                     name: str,
@@ -60,23 +60,54 @@ def read_customers(session: Session) -> list[Customer]:
 
     return list(customers)
 
+def update_customers_license_status(session: Session):
+    stmt = Select(Customer).options(selectinload(Customer.objects))
+    result: Result = session.execute(stmt)
+    customers = result.scalars().all()
+
+    for customer in customers:
+        print(customer.name)
+        active_licenses = 0
+        for object in customer.objects:
+            update_objects_license_status_by_id(session=session,
+                                                ID=object.id)
+            if object.status == "Активная":
+                active_licenses += 1
+
+        if active_licenses > 0:
+            customer.status = "Активный"
+        else:
+            customer.status = "Неактивный"
+
+        customer.count_of_licenses = active_licenses
+        session.add(customer)
+    session.commit()
+
+
+
+def read_licenses_by_user(session: Session) -> list:
+    pass
+
+
 
 def main():
-    with db_helper.sessionmaker() as session:
-        Gregory = create_customer(
-            session=session,
-            name="Gregory",
-            TIN="987654321012",
-            email="GregVladimidorich@gmail.com",
-            phone_number="89745612301",
-            contact_persons="Malcev Gregory Vladimirovich"            
-        )
-
-        print(Gregory)
-
     # with db_helper.sessionmaker() as session:
-    #     delete_customer_by_TIN(session=session,
-    #                                  TIN="987654321012")
+        # Gregory = create_customer(
+        #     session=session,
+        #     name="Gregory",
+        #     TIN="987654321012",
+        #     email="GregVladimidorich@gmail.com",
+        #     phone_number="89745612301",
+        #     contact_persons="Malcev Gregory Vladimirovich"            
+        # )
+
+        # print(Gregory)
+
+
+
+
+    with db_helper.sessionmaker() as session:
+        update_customers_license_status(session=session)
 
 
 if __name__ == "__main__":
