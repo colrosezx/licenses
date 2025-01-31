@@ -4,7 +4,8 @@ all = (
     "Customer",
     "Object",
     "Service",
-    "License"
+    "License",
+    "User"
 )
 
 from .base import Base
@@ -13,3 +14,4 @@ from .customers import Customer
 from .objects import Object
 from .services import Service
 from .licenses import License
+from .users import User

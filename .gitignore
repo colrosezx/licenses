@@ -5,3 +5,4 @@ alembic.ini
 *.db
 *.db-shm
 core/database.db-wal
+.vscode/
