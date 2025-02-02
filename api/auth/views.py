@@ -1,18 +1,15 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi import APIRouter, HTTPException, Response, status, Depends, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy import Select, Update
 from sqlalchemy.orm import Session
 from pydantic import EmailStr
-from .users_factory import users_factory
+from .users_factory import users_factory, cookie_settings
 from .schemas import UserCreate, UserLogin
 from core.models import User
 from core.models import database_helper as db_helper
 
-
 router = APIRouter(prefix="/auth", tags=['Authentification'])
-
-
 
 @router.post("/register/")
 def user_register(
@@ -48,6 +45,7 @@ def user_register(
 
 @router.post("/login/")
 def login_user(
+    response: Response,
     form_data: OAuth2PasswordRequestForm = Depends(),
     session: Session = Depends(db_helper.get_session_local)
 ):
@@ -59,19 +57,26 @@ def login_user(
      
         if users_factory.verify_password(form_data.password, hashed_password_from_db):
 
-            access_token = users_factory.jwt_encode_token(payload={"sub": str(user_info.id),"email": user_info.email, "status": user_info.status})
+            access_token = users_factory.jwt_encode_token(payload={"sub": str(user_info.id), 
+                                                                   "email": user_info.email, 
+                                                                   "status": user_info.status})
+            session_id = cookie_settings.generate_session_id()
+            cookie_settings.COOKIES[session_id] = {"user": user_info}
+            cookie_settings.set_cookie(response=response, 
+                                       key=cookie_settings.COOKIES_SESSION_ID_KEY, 
+                                       value=session_id)
+            cookie_settings.set_cookie(response=response, 
+                                       key="access_token", 
+                                       value=access_token)
             return {"message": "User login successfully", "access_token": access_token, "token_type": "bearer"}
         
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="False password")
     else:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email not registred")
-    
 
 
 
 @router.get("/users/profile/")
 def read_users_me(current_user: User = Depends(users_factory.get_current_user)):
     return current_user
-
-

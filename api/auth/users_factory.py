@@ -1,15 +1,16 @@
+import jwt
+import uuid
 from passlib.context import CryptContext
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
 from pydantic import EmailStr
-from fastapi import status, HTTPException, Depends
+from fastapi import Cookie, status, HTTPException, Depends, Response
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 from datetime import datetime, timedelta
 from core.config import project_settings
 from core.models import User
 from core.models import database_helper as db_helper
-from .schemas import UserLogin
+
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login/")
 
@@ -68,6 +69,30 @@ class Users_factory():
         except HTTPException:
             raise self.credentials_exception
         
+
+class Cookie_Settings():
+
+    def __init__(self):
+        self.COOKIES: dict[str: dict] = {}
+        self.COOKIES_SESSION_ID_KEY = project_settings.COOKIES_SESSION_ID_KEY
+
+    def generate_session_id(self) -> str:
+        return uuid.uuid4().hex
     
+    def set_cookie(self, response: Response, key: str, value: str, max_age: int = 3600):
+        response.set_cookie(key=key, value=value, max_age=max_age, httponly=True)
     
+    def delete_cookie(self, response: Response, key: str):
+        response.delete_cookie(key)
+    
+    def get_session_data(self, session_id: str = Cookie(alias=project_settings.COOKIES_SESSION_ID_KEY)):
+        if session_id not in self.COOKIES:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Not Authorized"
+            )
+        return self.COOKIES[session_id]
+    
+
+cookie_settings = Cookie_Settings()    
 users_factory = Users_factory()
