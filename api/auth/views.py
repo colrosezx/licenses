@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, status, Depends, Query
+from fastapi import APIRouter, HTTPException, status, Depends, Request
+from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy import Select, Update
 from sqlalchemy.orm import Session
@@ -11,13 +12,12 @@ from core.models import database_helper as db_helper
 
 router = APIRouter(prefix="/auth", tags=['Authentification'])
 
-def get_session_local():
-    yield db_helper.sessionmaker()
+
 
 @router.post("/register/")
 def user_register(
     user: UserCreate, 
-    session: Session = Depends(get_session_local)
+    session: Session = Depends(db_helper.get_session_local)
 ):
     user_reg_query = Select(User).where(User.email == user.email)
     user_info: User | None = session.execute(user_reg_query).scalar_one_or_none()   
@@ -42,24 +42,24 @@ def user_register(
 
         session.add(creation_user)
         session.commit()
-        access_token = users_factory.jwt_encode_token(payload={"sub": user.email})
+        access_token = users_factory.jwt_encode_token(payload={"sub": creation_user.id, "email": creation_user.email, "status": creation_user.status})
 
     return {"message": "User registered successfully", "access_token": access_token, "token_type": "bearer"}
 
 @router.post("/login/")
 def login_user(
-    user: UserLogin, 
-    session: Session = Depends(get_session_local)
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    session: Session = Depends(db_helper.get_session_local)
 ):
-    user_check_query = Select(User).where(User.email == user.email)
+    user_check_query = Select(User).where(User.email == form_data.username)
     user_info: User | None = session.execute(user_check_query).scalar_one_or_none()
 
     if user_info:
         hashed_password_from_db = user_info.password
      
-        if users_factory.verify_password(user.password, hashed_password_from_db):
+        if users_factory.verify_password(form_data.password, hashed_password_from_db):
 
-            access_token = users_factory.jwt_encode_token(payload={"email": user.email})
+            access_token = users_factory.jwt_encode_token(payload={"sub": str(user_info.id),"email": user_info.email, "status": user_info.status})
             return {"message": "User login successfully", "access_token": access_token, "token_type": "bearer"}
         
         else:
@@ -70,8 +70,8 @@ def login_user(
 
 
 
-@router.get("/testik/")
-def test_function():
-    return "My name is gg"
+@router.get("/users/profile/")
+def read_users_me(current_user: User = Depends(users_factory.get_current_user)):
+    return current_user
 
 

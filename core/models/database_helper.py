@@ -19,6 +19,9 @@ class Database_Helper():
             
         )
 
+    def get_session_local(self):
+        yield self.sessionmaker()
+
     def get_scoped_session(self):
         session = scoped_session(self.sessionmaker)
         return session
