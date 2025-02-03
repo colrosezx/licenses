@@ -1,3 +1,4 @@
+from typing import Optional
 import jwt
 import uuid
 import redis
@@ -56,7 +57,7 @@ class Users_factory():
         return decoded_jwt
     
 
-    def get_current_user(self, token: str = Depends(oauth2_scheme), session: Session = Depends(db_helper.get_session_local)):
+    def get_current_user(self, token: str, session: Session = Depends(db_helper.get_session_local)):
         try:
             payload = self.jwt_decode_token(token)
             email: EmailStr = payload.get("email")
@@ -80,7 +81,7 @@ class Cookie_Settings():
     def generate_session_id(self) -> str:
         return uuid.uuid4().hex
     
-    def get_session_data(self, session_id: str = Cookie(alias=project_settings.COOKIES_SESSION_ID_KEY)):
+    def get_session_data(self, session_id: Optional[str] = Cookie(default=None, alias=project_settings.COOKIES_SESSION_ID_KEY)):
         if session_id not in self.COOKIES:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

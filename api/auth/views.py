@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Response, status, Depends, Request
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Response, status, Depends, Request, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 from passlib.context import CryptContext
 from sqlalchemy import Select, Update
@@ -80,12 +81,24 @@ def login_user(
 
 @router.get('/users/profile/')
 def check_cookie(
-    user_session_data_from_session: str = Depends(cookie_settings.get_session_data)
+    user_session_data_from_session: dict = Depends(cookie_settings.get_session_data)
 ):
-    print(cookie_settings.COOKIES)
-    username = user_session_data_from_session["user"]
-
+    user = user_session_data_from_session["user"]
     return {
-        f"Hello, {username.email}!"
+        f"Hello, {user.email}!"
  }
 
+@router.get('/logout-cookie')
+def logout(
+    response: Response,
+    session_id: Optional[str] = Cookie(default=None, alias=project_settings.COOKIES_SESSION_ID_KEY),
+    user_session_data: str = Depends(cookie_settings.get_session_data)
+):
+
+    cookie_settings.COOKIES.pop(session_id)
+    response.delete_cookie(cookie_settings.COOKIES_SESSION_ID_KEY)
+    user = user_session_data["user"]
+
+    return {
+        f"Bye, {user}!"
+    }
