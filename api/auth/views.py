@@ -8,6 +8,7 @@ from .users_factory import users_factory, cookie_settings
 from .schemas import UserCreate, UserLogin
 from core.models import User
 from core.models import database_helper as db_helper
+from core.config import project_settings
 
 router = APIRouter(prefix="/auth", tags=['Authentification'])
 
@@ -62,12 +63,12 @@ def login_user(
                                                                    "status": user_info.status})
             session_id = cookie_settings.generate_session_id()
             cookie_settings.COOKIES[session_id] = {"user": user_info}
-            cookie_settings.set_cookie(response=response, 
-                                       key=cookie_settings.COOKIES_SESSION_ID_KEY, 
-                                       value=session_id)
-            cookie_settings.set_cookie(response=response, 
-                                       key="access_token", 
-                                       value=access_token)
+            response.set_cookie(key=cookie_settings.COOKIES_SESSION_ID_KEY, 
+                                       value=session_id,
+                                       httponly=True,
+                                       max_age=3600,
+                                       path="/")
+            print(cookie_settings.COOKIES)
             return {"message": "User login successfully", "access_token": access_token, "token_type": "bearer"}
         
         else:
@@ -77,6 +78,14 @@ def login_user(
 
 
 
-@router.get("/users/profile/")
-def read_users_me(current_user: User = Depends(users_factory.get_current_user)):
-    return current_user
+@router.get('/users/profile/')
+def check_cookie(
+    user_session_data_from_session: str = Depends(cookie_settings.get_session_data)
+):
+    print(cookie_settings.COOKIES)
+    username = user_session_data_from_session["user"]
+
+    return {
+        f"Hello, {username.email}!"
+ }
+

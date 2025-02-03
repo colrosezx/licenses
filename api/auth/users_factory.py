@@ -1,5 +1,6 @@
 import jwt
 import uuid
+import redis
 from passlib.context import CryptContext
 from sqlalchemy import Select
 from sqlalchemy.orm import Session
@@ -73,17 +74,11 @@ class Users_factory():
 class Cookie_Settings():
 
     def __init__(self):
-        self.COOKIES: dict[str: dict] = {}
+        self.COOKIES: dict = {}
         self.COOKIES_SESSION_ID_KEY = project_settings.COOKIES_SESSION_ID_KEY
 
     def generate_session_id(self) -> str:
         return uuid.uuid4().hex
-    
-    def set_cookie(self, response: Response, key: str, value: str, max_age: int = 3600):
-        response.set_cookie(key=key, value=value, max_age=max_age, httponly=True)
-    
-    def delete_cookie(self, response: Response, key: str):
-        response.delete_cookie(key)
     
     def get_session_data(self, session_id: str = Cookie(alias=project_settings.COOKIES_SESSION_ID_KEY)):
         if session_id not in self.COOKIES:
